@@ -2,6 +2,8 @@ import os
 import psycopg2
 from dotenv import load_dotenv # type: ignore
 import requests
+from PIL import Image, ImageDraw, ImageFont
+import cv2 as cv
 
 
 load_dotenv()
@@ -80,3 +82,40 @@ def convert_image_from_url(objectKey):
       print(f'Imagen guardada en {save_path}')
   else:
       print(f'Error al descargar la imagen: {response.status_code}')
+
+def create_credential(nombre, id, curp, cct ,archivo_foto, archivo_fondo):
+    
+    # Cargar la imagen de fondo
+    fondo = Image.open(archivo_fondo)
+    ancho, alto = fondo.size
+
+    # Crear un objeto para dibujar sobre la imagen de fondo
+    d = ImageDraw.Draw(fondo)
+
+    # Fuentes
+    try:
+        fuente_texto = ImageFont.truetype("arial.ttf", 30)
+        fuente_subtexto = ImageFont.truetype("arial.ttf", 15)
+    except IOError:
+        # Si no se encuentra la fuente, usa la fuente por defecto
+        fuente_texto = ImageFont.load_default()
+
+    # Añadir texto
+    d.text((523, 230), f"{nombre}", font=fuente_texto, fill=(255, 255, 255))
+    d.text((523, 350), f"{id}", font=fuente_texto, fill=(255, 255, 255))
+    d.text((600, 428), f"{curp}", font=fuente_subtexto, fill=(255, 255, 255))
+    d.text((597, 450), f"{cct}", font=fuente_subtexto, fill=(255, 255, 255))
+
+    # Convertir la imagen de OpenCV a imagen PIL
+    fotoAlumno = Image.open(archivo_foto)
+    fotoAlumno.resize((273, 369))
+    fondo.paste(fotoAlumno, (120, 135))
+
+    # Añadir un borde
+    d.rectangle([(0, 0), (ancho - 1, alto - 1)], outline=(0, 0, 0))
+
+    # Guardar la imagen
+    fondo.save(f"{nombre}_credencial.png")
+   
+   
+   
